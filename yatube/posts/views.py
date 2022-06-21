@@ -177,11 +177,17 @@ def profile_follow(request, username):
 
     author = get_object_or_404(User, username=username)
 
-    if author != request.user:
-        Follow.objects.create(
-            user=request.user,
-            author=author
-        )
+    if Follow.objects.filter(user=request.user, author=author).count() > 0:
+        return redirect('posts:follow_index')
+
+    if author == request.user:
+        return redirect('posts:follow_index')
+
+    # если дошли сюда, значит можно создавать подписку
+    Follow.objects.create(
+        user=request.user,
+        author=author
+    )
 
     return redirect('posts:follow_index')
 
