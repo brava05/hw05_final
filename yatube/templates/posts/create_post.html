@@ -36,7 +36,9 @@
           action="{% url 'posts:post_create' %}">
         {% endif %}
           {% csrf_token %}
-          {% include 'includes/field_in_form.html' %}
+          {% for field in form %}
+            {% include 'includes/field_in_form.html' %}
+          {% endfor %}
           <div class="d-flex justify-content-end">
             <button type="submit" class="btn btn-primary">
               {% if is_edit %}

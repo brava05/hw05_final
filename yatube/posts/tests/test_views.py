@@ -41,6 +41,8 @@ class TaskPagesTests(TestCase):
 
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
+        cache = caches['default']
+        cache.clear()
 
     def checking_context(self, post_1, post_2):
         self.assertEqual(post_1.group, post_2.group)
@@ -239,8 +241,9 @@ class TaskPagesTests(TestCase):
             )
         )
 
-        # Взяли первый комент и проверили
-        first_object = response.context['comments'][0]
+        # Теперь контест не содержит коментов
+        # получаем из поста комент
+        first_object = response.context['post'].comments.first()
         self.assertEqual(first_object.text, 'Тестовый коммент')
 
     def test_cache_index_page(self):

@@ -35,10 +35,8 @@ class PostModelTest(TestCase):
 
     def test_group_have_correct_object_names(self):
         """Проверяем, что у group корректно работает __str__."""
-        group = self.group
-        expected_object_name = str(group)
-        group_name = 'Группа ' + group.title
-        self.assertEqual(expected_object_name, group_name)
+        expected_object_name = str(self.group)
+        self.assertEqual(expected_object_name, 'Группа ' + self.group.title)
 
     def test_verbose_name(self):
         """verbose_name в полях совпадает с ожидаемым."""
@@ -58,11 +56,12 @@ class PostModelTest(TestCase):
     def test_help_text(self):
         """help_text в полях совпадает с ожидаемым."""
         post = PostModelTest.post
-        field_help_texts = {
-            'group': 'Выберите группу',
-            'text': 'Напишите что-то важное',
-        }
-        for field, expected_value in field_help_texts.items():
+        field_help_texts = (
+            ('group', 'Выберите группу'),
+            ('text', 'Напишите что-то важное'),
+        )
+        for element in field_help_texts:
+            field, expected_value = element
             with self.subTest(field=field):
                 self.assertEqual(
                     post._meta.get_field(field).help_text, expected_value)

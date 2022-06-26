@@ -52,12 +52,9 @@ def profile(request, username):
     posts = author.posts.select_related('group').all()
     page_obj = get_paginators_page(posts, request)
 
-    if not request.user.is_authenticated:
-        following = False
-    else:
-        following = Follow.objects.filter(
-            user=request.user, author=author
-        ).count()
+    following = (request.user.is_authenticated
+                 and Follow.objects.filter(
+                     user=request.user, author=author).exists())
 
     return render(
         request,
@@ -71,39 +68,34 @@ def post_detail(request, post_id):
     """ Показывает информацию о конкретной статье."""
 
     post = get_object_or_404(Post, pk=post_id)
-    comments = post.comments.all()
 
     form = CommentForm()
     return render(request,
                   'posts/post_detail.html',
-                  {'post': post, 'comments': comments, 'form': form})
+                  {'post': post, 'form': form})
 
 
 @login_required
 def post_create(request):
     """ Создает новый пост."""
 
-    if request.method == 'POST':
-        form = PostForm(
-            request.POST or None,
-            files=request.FILES or None,
-        )
-
-        if form.is_valid():
-
-            post = form.save(commit=False)
-            post.author = request.user
-            post.save()
-
-            return redirect('posts:profile', request.user.username)
-
-        # заполним все поля формы данными, прошедшими валидацию,
-        # чтобы не заставлять пользователя вносить их повторно
+    if request.method != 'POST':
+        form = PostForm()
         return render(request, 'posts/create_post.html', {'form': form})
 
-    form = PostForm()
+    form = PostForm(
+        request.POST or None,
+        files=request.FILES or None,
+    )
 
-    return render(request, 'posts/create_post.html', {'form': form})
+    if not form.is_valid():
+        return render(request, 'posts/create_post.html', {'form': form})
+
+    post = form.save(commit=False)
+    post.author = request.user
+    post.save()
+
+    return redirect('posts:profile', request.user.username)
 
 
 @login_required
@@ -127,14 +119,16 @@ def post_edit(request, post_id):
             request,
             'posts/create_post.html',
             {'form': form, 'is_edit': True, 'post_id': post_id})
-    if request.user == post.author:
-        form = PostForm(instance=post)
-        return render(
-            request,
-            'posts/create_post.html',
-            {'form': form, 'is_edit': True, 'post_id': post_id})
-    # если не автор, то открываем только для просмотра
-    return redirect('posts:post_detail', post_id)
+
+    if request.user != post.author:
+        # если не автор, то открываем только для просмотра
+        return redirect('posts:post_detail', post_id)
+
+    form = PostForm(instance=post)
+    return render(
+        request,
+        'posts/create_post.html',
+        {'form': form, 'is_edit': True, 'post_id': post_id})
 
 
 @login_required
@@ -158,15 +152,13 @@ def follow_index(request):
     на которых подписан пользователь."""
     posts = Post.objects.filter(author__following__user=request.user)
 
-    # posts = request.user.posts.select_related('author', 'group').all()
     page_obj = get_paginators_page(posts, request)
 
     return render(
         request,
-        'posts/follow.html',
+        'posts/index.html',
         {
             'page_obj': page_obj,
-            'index': False,
             'follow': True
         }
     )
@@ -177,10 +169,10 @@ def profile_follow(request, username):
 
     author = get_object_or_404(User, username=username)
 
-    if Follow.objects.filter(user=request.user, author=author).count() > 0:
-        return redirect('posts:follow_index')
-
-    if author == request.user:
+    if Follow.objects.filter(
+        user=request.user,
+        author=author
+    ).exists() or author == request.user:
         return redirect('posts:follow_index')
 
     # если дошли сюда, значит можно создавать подписку
@@ -196,6 +188,7 @@ def profile_follow(request, username):
 def profile_unfollow(request, username):
     # Отписка
     author = get_object_or_404(User, username=username)
-    Follow.objects.filter(user=request.user, author=author).delete()
+    if Follow.objects.filter(user=request.user, author=author).exists():
+        Follow.objects.filter(user=request.user, author=author).delete()
 
     return redirect('posts:follow_index')

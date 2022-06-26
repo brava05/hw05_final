@@ -1,3 +1,44 @@
-# hw05_final
+Введение.
 
-[![CI](https://github.com/yandex-praktikum/hw05_final/actions/workflows/python-app.yml/badge.svg?branch=master)](https://github.com/yandex-praktikum/hw05_final/actions/workflows/python-app.yml)
+Проект представляет собой что-то типа livejournal, где авторы могут размещать свои дневники статейки с картинками, а остальные могут комментировать и подписываться на интересных авторов.
+
+Пользователи могут регистрироваться и изменять пароли по необходимости.
+
+Написано на django 2.2 и python 3.
+
+Используется база данных SQLite по умолчанию.
+
+Как использовать.
+Сначала надо установить python.
+Потом устанавливаем django.
+
+$ pip install django
+
+Потом клонируем репозиторий себе на компьютер:
+
+$ git clone git@github.com/USERNAME/{{ project_name }}.git
+
+Переходим в папку проекта
+$ cd {{ project_name }}
+
+Создаем и активируем виртуальное пространство
+
+python -m venv venv
+source venv/Scripts/activate
+
+Устанавливаем все необходимые пакеты:
+$ pip install -r requirements/local.txt
+
+Создаем миграции 
+$ python manage.py makemigrations 
+$ python manage.py migrate 
+
+И теперь можно запускать сервер:
+$ python manage.py runserver
+
+Для работы в браузере надо перейти по ссылке
+http://127.0.0.1:8000/
+
+Как работать без питона и репозиториев пока не знаю, но скоро добавится и эта инструкция.
+
+Автор: Бражинский Валерий.

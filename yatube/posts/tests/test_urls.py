@@ -64,7 +64,7 @@ class TaskURLTests(TestCase):
         """
         response = self.client.get(reverse('posts:post_create'), follow=True)
         self.assertRedirects(
-            response, ('/auth/login/?next=/create/'))
+            response, (reverse('users:login') + '?next=/create/'))
 
     def test_urls_uses_correct_template(self):
         post = Post.objects.first()

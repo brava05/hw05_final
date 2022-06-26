@@ -8,6 +8,7 @@ from http import HTTPStatus
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
+from django.core.cache import caches
 
 
 User = get_user_model()
@@ -36,6 +37,8 @@ class TaskCreateFormTests(TestCase):
         self.user = User.objects.create_user(username='post_author_form')
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
+        cache = caches['default']
+        cache.clear()
 
     def test_create_post(self):
         """Валидная форма создает запись."""
@@ -53,7 +56,6 @@ class TaskCreateFormTests(TestCase):
             content=small_gif,
             content_type='image/gif'
         )
-        # Подсчитаем количество записей в Post
         form_data = {
             'text': 'Тестовый текст формы',
             'group': self.test_group.id,
@@ -125,7 +127,9 @@ class TaskCreateFormTests(TestCase):
         self.guest_client = Client()
         response = self.guest_client.get(reverse('posts:post_create'))
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
-        self.assertRedirects(response, '/auth/login/?next=/create/')
+        self.assertRedirects(response,
+                             reverse('users:login') + '?next=/create/'
+                             )
 
     def test_comment_post_for_not_autorised(self):
         """Проверяем отсутствие доступа для комментариев
