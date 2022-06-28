@@ -64,18 +64,19 @@ class TaskURLTests(TestCase):
         """
         response = self.client.get(reverse('posts:post_create'), follow=True)
         self.assertRedirects(
-            response, (reverse('users:login') + '?next=/create/'))
+            response, f'{reverse("users:login")}?next=/create/')
 
     def test_urls_uses_correct_template(self):
         post = Post.objects.first()
-        templates_url_names = {
-            'posts/index.html': '/',
-            'posts/group_list.html': '/group/test-slug/',
-            'posts/profile.html': '/profile/post_author/',
-            'posts/post_detail.html': '/posts/' + str(post.pk) + '/',
-            'posts/create_post.html': '/create/'
-        }
-        for template, address in templates_url_names.items():
+        templates_url_names = (
+            ('posts/index.html', '/'),
+            ('posts/group_list.html', '/group/test-slug/'),
+            ('posts/profile.html', '/profile/post_author/'),
+            ('posts/post_detail.html', f'/posts/{str(post.pk)}/'),
+            ('posts/create_post.html', '/create/')
+        )
+        for element in templates_url_names:
+            template, address = element
             with self.subTest(address=address):
                 response = self.authorized_client.get(address)
                 self.assertTemplateUsed(response, template)

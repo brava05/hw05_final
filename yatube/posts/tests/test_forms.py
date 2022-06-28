@@ -128,7 +128,7 @@ class TaskCreateFormTests(TestCase):
         response = self.guest_client.get(reverse('posts:post_create'))
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
         self.assertRedirects(response,
-                             reverse('users:login') + '?next=/create/'
+                             f'{reverse("users:login")}?next=/create/'
                              )
 
     def test_comment_post_for_not_autorised(self):
